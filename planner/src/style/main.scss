@@ -1,0 +1,25 @@
+$--color-primary: #f9c349;
+$--color-lighter: #ffa32c;
+
+.el-drawer {
+  background-color: #ffffffc9;
+}
+
+.el-button--primary {
+  background-color: $--color-primary;
+  border-color: $--color-primary;
+}
+
+.el-button--primary:hover,
+.el-button--primary:focus {
+  background-color: $--color-lighter;
+  border-color: $--color-lighter;
+}
+
+.el-button--primary.is-disabled,
+.el-button--primary.is-disabled:active,
+.el-button--primary.is-disabled:focus,
+.el-button--primary.is-disabled:hover {
+  background-color: #ffe6ad;
+  border-color: #ffe6ad;
+}
