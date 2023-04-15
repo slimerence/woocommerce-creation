@@ -24,8 +24,8 @@ body {
 }
 
 #app {
-  height: 100%;
-  height: 700px;
+  /* height: 100%; */
+  height: 800px;
   width: 100%;
   margin: 0 auto;
   position: relative;

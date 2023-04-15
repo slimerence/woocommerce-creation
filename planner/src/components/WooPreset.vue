@@ -17,6 +17,9 @@
           :key="preset.id"
           @click.native="loadPreset(preset)"
         >
+          <div class="woo-render-btn" @click.stop="removeItem(preset.id)">
+            <i class="el-icon-delete"></i>
+          </div>
           <el-image :src="preset.image_url"></el-image>
           <div class="woo-preset-info">
             <div class="woo-preset-title">{{ preset.title }}</div>
@@ -28,7 +31,7 @@
 </template>
 
 <script>
-import { getPresets } from "@/api/woocommerce";
+import { getPresets, deletePresets } from "@/api/woocommerce";
 /* eslint-disable */
 export default {
   props: {},
@@ -84,6 +87,20 @@ export default {
         })
         .catch(() => {});
     },
+    removeItem(id) {
+      this.$confirm("Are you sure to delete this preset", "Alert", {
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
+        // type: "info",
+      })
+        .then(() => {
+          deletePresets({ ids: [id] }).then((res) => {
+            this.$message.success('Delete success');
+            this.query();
+          });
+        })
+        .catch(() => {});
+    },
   },
 };
 </script>
@@ -106,6 +123,21 @@ export default {
 .woo-preset-item {
   margin-bottom: 10px;
   cursor: pointer;
+  .woo-render-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    z-index: 100;
+    background: red;
+    text-align: center;
+    line-height: 20px;
+    i {
+      font-size: 12px;
+      color: #fff;
+    }
+  }
 }
 .woo-preset-item .el-card__body {
   position: relative;
@@ -115,6 +147,8 @@ export default {
     bottom: 35px;
     padding: 0 20px;
     width: calc(100% - 40px);
+    box-sizing: border-box;
+
     .woo-preset-title {
       width: 100%;
       white-space: nowrap;
@@ -125,6 +159,7 @@ export default {
       background-color: #ffffff9c;
       padding-left: 10px;
       box-shadow: 1px 0px 2px #929292;
+      box-sizing: border-box;
     }
   }
   .el-image {

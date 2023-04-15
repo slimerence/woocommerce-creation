@@ -17,8 +17,8 @@ const VERSION = '1.1.7';
 const DEV_MODE = false;
 const CATEGORY_OPTION = 'kongfuseo-creation-category';
 
-define( 'KONGFU_EXT_FILE', __FILE__ ); 
-define( 'KONGFU_EXT_DIR', plugin_dir_path( KONGFU_EXT_FILE ) );
+define('KONGFU_EXT_FILE', __FILE__);
+define('KONGFU_EXT_DIR', plugin_dir_path(KONGFU_EXT_FILE));
 
 require_once KONGFU_EXT_DIR . 'addons/planner-api.php';
 require_once KONGFU_EXT_DIR . 'addons/cart-api.php';
@@ -26,74 +26,7 @@ require_once KONGFU_EXT_DIR . 'addons/global-api.php';
 require_once KONGFU_EXT_DIR . 'addons/media-library.php';
 require_once KONGFU_EXT_DIR . 'addons/preset-api.php';
 
-
-function my_vue_panel_page()
-{
-    $setting_data_option = get_option(PLUGIN_SLUG_NAME);
-    $creation_category = get_option(CATEGORY_OPTION);
-?>
-    <script type="text/javascript">
-        const vue_wp_api_url = "<?php echo get_site_url() . '/wp-json/' . PLUGIN_SLUG_NAME ?>";
-        const vue_wp_settings_data = <?php
-                                        if ($setting_data_option) {
-                                            echo json_encode($setting_data_option);
-                                        } else {
-                                            echo '{}';
-                                        }
-                                        ?>;
-        const vue_wp_category_data = <?php
-                                        if ($creation_category) {
-                                            echo json_encode($creation_category);
-                                        } else {
-                                            echo '{}';
-                                        }
-                                        ?>;
-    </script>
-    <div id="app-kongfuseo"></div>
-<?php
-    wp_enqueue_script(
-        PLUGIN_SLUG_NAME . '-chunk',
-        plugin_dir_url(__FILE__) . 'app/dist/js/chunk-vendors.js',
-        array(),
-        DEV_MODE ? time() : VERSION,
-        true
-    );
-    wp_enqueue_script(
-        PLUGIN_SLUG_NAME . '-main',
-        plugin_dir_url(__FILE__) . 'app/dist/js/app.js',
-        array(),
-        DEV_MODE ? time() : VERSION,
-        false
-    );
-    wp_enqueue_style(
-        PLUGIN_SLUG_NAME . '-chunk',
-        plugin_dir_url(__FILE__) . 'app/dist/css/chunk-vendors.css',
-        array(),
-        DEV_MODE ? time() : VERSION
-    );
-    wp_enqueue_style(
-        PLUGIN_SLUG_NAME,
-        plugin_dir_url(__FILE__) . 'app/dist/css/app.css',
-        array(),
-        DEV_MODE ? time() : VERSION
-    );
-}
-
-function add_menu_item()
-{
-    add_menu_page(
-        "Creations Setting Pannel",
-        "Our Creations",
-        "manage_options",
-        PLUGIN_SLUG_NAME,
-        "my_vue_panel_page",
-        'dashicons-tickets-alt',
-        30
-    );
-}
-
-add_action("admin_menu", "add_menu_item");
-
+require_once KONGFU_EXT_DIR . 'pages/preset.php';
 
 
 /**
@@ -163,6 +96,9 @@ add_filter('ajax_query_attachments_args', 'hideMediaFromOtherUsers');
 // init frontend planner
 function init_kongfuseo_planner()
 {
+    $str = '<script type="text/javascript">
+  const vue_isadmin = false;
+</script><div id="app"></div>';
     wp_enqueue_style('chunk-style', plugin_dir_url(__FILE__) . 'planner/dist/css/chunk-vendors.css', array(), DEV_MODE ? time() : VERSION, 'all');
     wp_enqueue_style('main-style', plugin_dir_url(__FILE__) . 'planner/dist/css/app.css', array(), DEV_MODE ? time() : VERSION, 'all');
     wp_enqueue_script('chunk-js', plugin_dir_url(__FILE__) . 'planner/dist/js/chunk-vendors.js', NUll, DEV_MODE ? time() : VERSION, false);
@@ -170,7 +106,6 @@ function init_kongfuseo_planner()
     wp_localize_script('main-js', 'kongfuseo_addon_data', array(
         'nonce' => wp_create_nonce('rental-cart')
     ));
-    $str = '<div id="app"></div>';
 
     return $str;
 }
@@ -332,4 +267,3 @@ add_action('rest_api_init', function () {
         'callback' => 'list_categories_by_ids',
     ));
 });
-

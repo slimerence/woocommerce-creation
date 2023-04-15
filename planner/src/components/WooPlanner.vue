@@ -56,9 +56,10 @@
             type="text"
             icon="el-icon-goods"
             @click="openCart('Check Cart')"
+            v-if="!isAdmin"
           ></el-button>
         </div>
-        <div class="side-end">
+        <div class="side-end" v-if="isAdmin">
           <el-button
             class="woo-side-button"
             type="text"
@@ -131,6 +132,10 @@ export default {
         return "unset";
       }
     },
+    isAdmin() {
+      // eslint-disable-next-line no-undef
+      return !!vue_isadmin;
+    },
     renderPostCode() {
       if (this.eventSetting && this.eventSetting.postcode) {
         return this.eventSetting.postcode;
@@ -139,7 +144,9 @@ export default {
       }
     },
   },
-  created() {},
+  created() {
+    console.log(this.isAdmin);
+  },
   mounted() {
     this.initData();
     this.$eventBus.$on("loadPreset", (preset) => {
@@ -255,6 +262,7 @@ export default {
 .woo-setting-info {
   padding: 5px 20px;
   position: absolute;
+  box-sizing: border-box;
   top: 0;
   width: calc(100% - 64px);
   z-index: 89;

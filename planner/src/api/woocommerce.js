@@ -47,6 +47,17 @@ export function savePresets(data) {
   })
 }
 
+export function deletePresets(data) {
+  return request({
+    baseURL,
+    url: '/wp-json/kongfuseo-admin-setting-panel/preset/delete',
+    method: 'post',
+    data
+  })
+}
+
+
+
 export function getWooCategoryByIds(data) {
   return request({
     baseURL,

@@ -76,6 +76,10 @@ export default {
     disableAdd() {
       return !this.currentVariation;
     },
+    isAdmin() {
+      // eslint-disable-next-line no-undef
+      return !!vue_isadmin;
+    },
   },
   methods: {
     variationName(variation) {
@@ -94,7 +98,7 @@ export default {
       }
     },
     chooseVariation(variation) {
-      if(variation.rent_available.indexOf('unavailable_') > -1){
+      if(variation.rent_available.indexOf('unavailable_') > -1 && !this.isAdmin){
         return false;
       }
       this.currentImg = variation.image.full_src;
