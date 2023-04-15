@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
-// import Oauth1Helper from '@/utils/oauth1';
 
 // create an axios instance
 const service = axios.create({
@@ -16,10 +15,6 @@ service.interceptors.request.use(
     //   url: 'http://localhost:8080/wp-json/wc/v3/products/categories',
     //   method: 'get',
     // }
-    config.auth = {
-      username: 'ck_45282eb6963bf14be7ba1d58c0d9ea86329d9d1e',
-      password: 'cs_9345e4f579b6f40405594bda1718219a64c3da4d',
-    }
 
     // const authHeader = Oauth1Helper.getAuthHeaderForRequest(options);
     const authHeader = null;

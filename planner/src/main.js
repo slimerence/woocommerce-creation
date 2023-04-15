@@ -9,6 +9,7 @@ import locale from 'element-ui/lib/locale/lang/en'
 Vue.use(ElementUI, { locale })
 
 Vue.prototype.subjx = subjx;
+Vue.prototype.$eventBus = new Vue();
 Vue.config.productionTip = false
 
 Vue.directive('click-outside', {

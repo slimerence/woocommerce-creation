@@ -14,46 +14,69 @@
           >
         </div>
         <div class="setting-right">
-          <el-button type="primary" icon="el-icon-setting" @click="changeSetting" size="mini"
+          <el-button
+            type="primary"
+            icon="el-icon-setting"
+            @click="changeSetting"
+            size="mini"
             >Setting</el-button
           >
         </div>
       </div>
       <div class="woo-planner-content">
         <woo-board
+          ref="WooBoard"
           :productList="selectedProducts"
           @removeProduct="removeProduct"
           :asset="sceneAsset"
         />
       </div>
       <div class="woo-planner-side">
-        <el-button
-          class="woo-side-button"
-          @click="openProductDrawer"
-          type="text"
-          icon="el-icon-circle-plus-outline"
-        ></el-button>
-        <el-button
-          class="woo-side-button"
-          type="text"
-          icon="el-icon-picture-outline"
-          @click="openSceneCart()"
-        ></el-button>
-        <el-button
-          class="woo-side-button"
-          type="text"
-          icon="el-icon-s-order"
-          @click="openPreset"
-        ></el-button>
-        <el-button
-          class="woo-side-button"
-          type="text"
-          icon="el-icon-goods"
-          @click="openCart('Check Cart')"
-        ></el-button>
+        <div class="side-top">
+          <el-button
+            class="woo-side-button"
+            @click="openProductDrawer"
+            type="text"
+            icon="el-icon-circle-plus-outline"
+          ></el-button>
+          <el-button
+            class="woo-side-button"
+            type="text"
+            icon="el-icon-picture-outline"
+            @click="openSceneCart()"
+          ></el-button>
+          <el-button
+            class="woo-side-button"
+            type="text"
+            icon="el-icon-s-order"
+            @click="openPreset"
+          ></el-button>
+          <el-button
+            class="woo-side-button"
+            type="text"
+            icon="el-icon-goods"
+            @click="openCart('Check Cart')"
+          ></el-button>
+        </div>
+        <div class="side-end">
+          <el-button
+            class="woo-side-button"
+            type="text"
+            icon="el-icon-s-claim"
+            @click="saveCreation"
+          ></el-button>
+        </div>
       </div>
-      <woo-selector ref="drawerSelector" @addProduct="addProduct" :eventSetting="eventSetting" />
-      <woo-cart ref="drawerCart" :products="selectedProducts" :eventSetting="eventSetting" />
+      <woo-selector
+        ref="drawerSelector"
+        @addProduct="addProduct"
+        :eventSetting="eventSetting"
+      />
+      <woo-cart
+        ref="drawerCart"
+        :products="selectedProducts"
+        :eventSetting="eventSetting"
+      />
       <woo-cart-scene ref="drawerScene" @change="changeScene" />
       <woo-preset ref="drawerPreset" />
       <enter-form ref="enterForm" @update="updateEventSetting" />
@@ -119,8 +142,29 @@ export default {
   created() {},
   mounted() {
     this.initData();
+    this.$eventBus.$on("loadPreset", (preset) => {
+      this.loadPreset(preset);
+    });
   },
   methods: {
+    loadPreset(preset) {
+      try {
+        const config = JSON.parse(preset.text);
+        if (config && config.products && config.products.length > 0) {
+          this.selectedProducts.splice(0);
+          config.products.forEach((element) => {
+            this.selectedProducts.push(element);
+          });
+          console.log("config", config);
+          this.sceneAsset = {
+            backgroundUrl: config.background,
+          };
+        }
+      } catch (e) {
+        this.$message.error("There is some error in the preset you check.");
+      }
+    },
+
     initData() {
       getOptions().then((res) => {
         const config = JSON.parse(res);
@@ -191,6 +235,9 @@ export default {
         (product) => product.key !== uniqueId
       );
     },
+    saveCreation() {
+      this.$eventBus.$emit("save");
+    },
   },
 };
 </script>
@@ -216,10 +263,10 @@ export default {
   i {
     cursor: pointer;
   }
-  .setting-detail{
+  .setting-detail {
     display: inline-block;
   }
-  .setting-right{
+  .setting-right {
     float: right;
   }
   .setting-config {
@@ -251,6 +298,15 @@ export default {
   flex-direction: column;
   z-index: 90;
   position: relative;
+  justify-content: space-between;
+  .side-top {
+    display: flex;
+    flex-direction: column;
+  }
+  .side-end {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .woo-planner-side .woo-side-button {

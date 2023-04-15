@@ -145,8 +145,8 @@ export default {
   methods: {
     handleClose(done) {
       this.$confirm("Confirm close?", "Alert", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
         // type: "info",
       })
         .then(() => {

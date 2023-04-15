@@ -1,5 +1,11 @@
 <template>
-  <div class="woo-board" :style="{ backgroundImage: background }">
+  <div
+    id="creationBoard"
+    class="woo-board"
+    @click.self="clickBoard"
+    :style="{ backgroundImage: background }"
+    v-loading="saveLoading"
+  >
     <woo-render-item
       v-for="product of products"
       :key="product.key"
@@ -15,6 +21,11 @@
 <script>
 // import mock from "@/utils/mock";
 import WooRenderItem from "./WooItem.vue";
+import html2canvas from "html2canvas";
+import { dataURItoBlob, uploadFile } from "@/utils/upload";
+import { savePresets } from "@/api/woocommerce";
+import moment from "moment";
+
 export default {
   props: {
     productList: Array,
@@ -28,6 +39,7 @@ export default {
       xElements: [],
       renderElements: {},
       background: "",
+      saveLoading: false,
     };
   },
   watch: {
@@ -40,21 +52,96 @@ export default {
     asset: {
       handler() {
         if (this.asset) {
-          this.background = `url('${this.asset.url}')`;
+          if (this.asset.backgroundUrl) {
+            this.background = this.asset.backgroundUrl;
+          } else {
+            this.background = `url('${this.asset.url}')`;
+          }
         }
       },
     },
   },
+  mounted() {
+    this.$eventBus.$on("save", this.saveBoard);
+  },
   methods: {
-    productLoad(item, uniqueId) {
-      console.log("load item", item, uniqueId);
+    loadProducts(productList) {
+      this.products = productList;
+    },
+
+    preCheckPreset() {
+      return this.products.length > 0;
+    },
+    saveBoard() {
+      this.saveLoading = true;
+      const valid = this.preCheckPreset();
+      const configText = this.generateRenderInfo();
+      // return;
+      if (!valid) {
+        this.$message.info(
+          "Please add at least one product to the creation board"
+        );
+        return;
+      }
+      // 执行保存
+      this.disableAll();
+      const board = document.getElementById("creationBoard");
+      html2canvas(board).then(async (canvas) => {
+        const dataUrl = canvas.toDataURL("image/png");
+        const blob = dataURItoBlob(dataUrl);
+        const url = await uploadFile(blob);
+        const timeName = moment().format("MMMM Do YYYY, HH:mm:ss");
+        const data = {
+          title: timeName,
+          text: JSON.stringify(configText),
+          image_url: url,
+        };
+        savePresets(data)
+          .then((res) => {
+            console.log("res", res);
+            if (res.success) {
+              this.$message.success("Save Success");
+            }
+          })
+          .finally(() => {
+            this.saveLoading = false;
+            this.$eventBus.$emit("presetSaved");
+          });
+      });
+    },
+    generateRenderInfo() {
+      const renderProducts = this.products.map((product) => {
+        const element = document.getElementById(product.key);
+        console.log("element", element);
+        return {
+          style: element ? element.style.transform : "",
+          ...product,
+        };
+      });
+      const config = {
+        background: this.background,
+        products: renderProducts,
+      };
+      return config;
+    },
+    productLoad(product, uniqueId) {
+      console.log("load item", product, uniqueId);
+      if (product.style && product.style != "") {
+        const element = document.getElementById(uniqueId);
+        if (element) {
+          element.style.transform = product.style;
+        }
+      }
       // init
       this.enableDrag(uniqueId, true);
     },
-    enableDrag(uniqueId, resize = false) {
+    disableAll() {
       for (let key in this.renderElements) {
         this.clickOutSide(key);
       }
+    },
+    enableDrag(uniqueId, resize = false) {
+      this.disableAll();
       const element = document.getElementById(uniqueId);
       if (element && !this.renderElements[uniqueId]) {
         const options = {
@@ -100,6 +187,9 @@ export default {
       // this.products = this.products.filter(product=>product.key !==uniqueId)
       this.$emit("removeProduct", uniqueId);
     },
+    clickBoard() {
+      this.disableAll();
+    },
   },
 };
 </script>
@@ -119,5 +209,13 @@ export default {
 }
 .sjx-controls {
   z-index: 500;
+}
+
+.woo-render-item .woo-render-btn {
+  display: none;
+}
+
+.woo-render-item.sjx-drag .woo-render-btn {
+  display: block;
 }
 </style>

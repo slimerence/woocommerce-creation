@@ -1,6 +1,6 @@
 <template>
   <el-drawer
-    class="woo-cart-drawer"
+    class="woo-preset-drawer"
     :title="drawerTitle"
     :append-to-body="false"
     :visible.sync="cartVisible"
@@ -9,28 +9,19 @@
     :modal="false"
     :size="360"
   >
-    <div class="woo-cart-container">
-      <div class="woo-cart-wrapper">
+    <div class="woo-preset-container">
+      <div class="woo-preset-wrapper">
         <el-card
-          class="woo-cart-item"
-          v-for="(product, index) of products"
-          :key="`${product.id}-${index}`"
+          class="woo-preset-item"
+          v-for="preset of presetList"
+          :key="preset.id"
+          @click.native="loadPreset(preset)"
         >
-          <el-image
-            v-if="product.images && product.images.length > 0"
-            :src="product.images[0].src"
-          ></el-image>
-          <el-image v-else :src="placeholderUrl"> </el-image>
-          <div class="woo-cart-info">
-            <div class="woo-cart-title">{{ product.name }}</div>
-            <div class="woo-cart-price" v-html="product.price_html"></div>
+          <el-image :src="preset.image_url"></el-image>
+          <div class="woo-preset-info">
+            <div class="woo-preset-title">{{ preset.title }}</div>
           </div>
         </el-card>
-      </div>
-      <div class="woo-cart-footer">
-        <el-button @click="addToPreset" size="small" type="success"
-          >ADD</el-button
-        >
       </div>
     </div>
   </el-drawer>
@@ -40,9 +31,7 @@
 import { getPresets } from "@/api/woocommerce";
 /* eslint-disable */
 export default {
-  props: {
-    products: Array,
-  },
+  props: {},
   name: "WooPreset",
   data() {
     return {
@@ -59,66 +48,92 @@ export default {
       this.cartVisible = true;
       this.query();
     },
-    closeCartDrawer() {
+    closePresetDrawer() {
       this.cartVisible = false;
     },
     addToPreset() {
-      this.$message.error('Presets can only be edited in backend.');
+      this.$message.error("Presets can only be edited in backend.");
+      this.closePresetDrawer();
+      this.$eventBus.$emit("save");
     },
     query() {
       getPresets()
         .then((result) => {
-          this.presetList = result;
+          console.log(result.data);
+          this.presetList = result.data;
         })
         .catch((err) => {
           console.log("error", err);
         });
+    },
+    loadPreset(preset) {
+      this.$confirm(
+        "This action will replace current creation board with all products from the preset, confirm to continue.",
+        "Alert",
+        {
+          confirmButtonText: "Yes",
+          cancelButtonText: "No",
+          // type: "info",
+        }
+      )
+        .then(() => {
+          console.log("load preset", preset);
+          this.closePresetDrawer();
+          this.$eventBus.$emit("loadPreset", preset);
+          done();
+        })
+        .catch(() => {});
     },
   },
 };
 </script>
 
 <style lang="scss">
-.woo-cart-drawer {
+.woo-preset-drawer {
   .el-drawer__header {
     margin-bottom: 0;
   }
-  .woo-cart-container {
+  .woo-preset-container {
     padding: 20px 0 55px 0;
   }
-  .woo-cart-wrapper {
+  .woo-preset-wrapper {
     padding: 0 20px 0 20px;
   }
 }
-.woo-cart-drawer .el-drawer__body {
+.woo-preset-drawer .el-drawer__body {
   position: relative;
 }
-.woo-cart-item {
+.woo-preset-item {
   margin-bottom: 10px;
+  cursor: pointer;
 }
-.woo-cart-item .el-card__body {
+.woo-preset-item .el-card__body {
   position: relative;
-  display: flex;
-  gap: 10px;
-  .woo-cart-info {
-    flex-grow: 1;
+  .woo-preset-info {
     font-size: 12px;
-    .woo-cart-title {
-      width: 200px;
+    position: absolute;
+    bottom: 35px;
+    padding: 0 20px;
+    width: calc(100% - 40px);
+    .woo-preset-title {
+      width: 100%;
       white-space: nowrap;
       overflow: hidden;
+      font-weight: bold;
       text-overflow: ellipsis;
+      padding-left: 10px;
+      background-color: #ffffff9c;
+      padding-left: 10px;
+      box-shadow: 1px 0px 2px #929292;
     }
   }
-
   .el-image {
     flex-grow: 0;
-    width: 60px;
-    height: 60px;
-    border: 1px solid #e3e3e3;
+    width: 100%;
+    height: auto;
   }
 }
-.woo-cart-footer {
+.woo-preset-footer {
   position: absolute;
   bottom: 0;
   width: 100%;

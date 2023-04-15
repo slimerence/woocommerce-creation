@@ -59,8 +59,8 @@ export default {
     //   }
     // },
     afterLoad() {
-      const element = document.getElementById(this.uniqueId);
-      this.$emit("onLoad", element, this.uniqueId);
+      // const element = document.getElementById(this.uniqueId);
+      this.$emit("onLoad", this.product, this.uniqueId);
     },
     control() {
       // const element = this.elements;

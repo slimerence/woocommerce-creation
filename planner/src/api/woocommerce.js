@@ -38,11 +38,12 @@ export function getPresets() {
   })
 }
 
-export function savePresets() {
+export function savePresets(data) {
   return request({
     baseURL,
     url: '/wp-json/kongfuseo-admin-setting-panel/preset/post',
     method: 'post',
+    data
   })
 }
 
@@ -60,6 +61,19 @@ export function addToCart(data) {
     baseURL,
     url: '/wp-json/kongfuseo/v1/add-to-cart',
     method: 'post',
+    data
+  })
+}
+
+
+export function uploadImage(data) {
+  return request({
+    baseURL,
+    url: '/wp-json/kongfuseo-admin-setting-panel/image-upload',
+    method: 'post',
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
     data
   })
 }

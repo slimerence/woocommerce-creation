@@ -2,7 +2,7 @@
 /*
  * Plugin Name:       Kongfuseo Addon
  * Description:       Enhance woocommerce functions with customized design products.
- * Version:           1.1.5
+ * Version:           1.1.7
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Author:            Kongfuseo Co.
@@ -13,7 +13,7 @@
 
 
 const PLUGIN_SLUG_NAME = 'kongfuseo-admin-setting-panel';
-const VERSION = '1.1.5';
+const VERSION = '1.1.7';
 const DEV_MODE = false;
 const CATEGORY_OPTION = 'kongfuseo-creation-category';
 
@@ -24,6 +24,7 @@ require_once KONGFU_EXT_DIR . 'addons/planner-api.php';
 require_once KONGFU_EXT_DIR . 'addons/cart-api.php';
 require_once KONGFU_EXT_DIR . 'addons/global-api.php';
 require_once KONGFU_EXT_DIR . 'addons/media-library.php';
+require_once KONGFU_EXT_DIR . 'addons/preset-api.php';
 
 
 function my_vue_panel_page()
@@ -238,181 +239,6 @@ function woocommerce_maybe_add_multiple_products_to_cart()
 
 // Fire before the WC_Form_Handler::add_to_cart_action callback.
 add_action('wp_loaded',        'woocommerce_maybe_add_multiple_products_to_cart', 15);
-
-
-
-/************************** 数据库初始化BEGIN ***************************/
-const PRESET_NAME = 'creation_preset';
-
-function kongfu_database_create()
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . PRESET_NAME;
-    $charset_collate = $wpdb->get_charset_collate();
-
-    $sql = "CREATE TABLE $table_name (
-		id mediumint(9) NOT NULL AUTO_INCREMENT,
-		time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-		title text NOT NULL,
-		text text NOT NULL,
-		PRIMARY KEY  (id)
-	) $charset_collate;";
-
-
-    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-    dbDelta($sql);
-
-    add_option('kongfu_db_version', VERSION);
-
-    // 版本升级更新数据库使用
-    $installed_ver = get_option("kongfu_db_version");
-
-    if ($installed_ver != VERSION) {
-
-        $table_name = $wpdb->prefix . PRESET_NAME;
-
-        $sql = "CREATE TABLE $table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-            title text NOT NULL,
-            text text NOT NULL,
-            PRIMARY KEY  (id)
-        );";
-
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-        dbDelta($sql);
-
-        update_option("kongfu_db_version", $kongfu_db_version);
-    }
-}
-
-function kongfu_install_data()
-{
-    global $wpdb;
-
-    $welcome_name = 'Mr. WordPress';
-    $welcome_text = 'Congratulations, you just completed the installation!';
-
-    $table_name = $wpdb->prefix . PRESET_NAME;
-
-    $wpdb->insert(
-        $table_name,
-        array(
-            'time' => current_time('mysql'),
-            'title' => $welcome_name,
-            'text' => $welcome_text,
-        )
-    );
-}
-
-register_activation_hook(__FILE__, 'kongfu_database_create');
-register_activation_hook(__FILE__, 'kongfu_install_data');
-
-
-function myplugin_update_db_check()
-{
-    if (get_site_option('kongfu_db_version') != VERSION) {
-        kongfu_database_create();
-    }
-}
-
-add_action('plugins_loaded', 'myplugin_update_db_check');
-
-/************************** 数据库初始化END ***************************/
-
-
-add_action('rest_api_init', function () {
-    register_rest_route(PLUGIN_SLUG_NAME, '/preset/fetch', array(
-        'methods' => 'POST',
-        'callback' => 'get_preset_func',
-    ));
-});
-
-add_action('rest_api_init', function () {
-    register_rest_route(PLUGIN_SLUG_NAME, '/preset/post', array(
-        'methods' => 'POST',
-        'callback' => 'post_preset_func',
-    ));
-});
-
-add_action('rest_api_init', function () {
-    register_rest_route(PLUGIN_SLUG_NAME, '/preset/delete', array(
-        'methods' => 'POST',
-        'callback' => 'delete_preset_func',
-    ));
-});
-
-/** 删除接口，支持批量删除 */
-function delete_preset_func($request)
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . PRESET_NAME;
-    $ids = $request['ids'];
-    $ids = implode(',', array_map('absint', $ids));
-    return $wpdb->query("DELETE FROM $table_name WHERE ID IN($ids)");
-}
-
-/** 获取接口，支持分页 */
-function get_preset_func($request)
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . PRESET_NAME;
-    $page = isset($request['page']) ? $request['page'] : 1;
-    $size = isset($request['pageSize']) ? $request['pageSize'] : 10;
-    $offset = $size * ($page - 1);
-    $presets = $wpdb->get_results(
-        "
-            SELECT * FROM $table_name
-            LIMIT $size
-            OFFSET $offset
-        "
-    );
-    $count_query = "select count(*) from $table_name";
-    $num = $wpdb->get_var($count_query);
-
-    return wp_send_json([
-        'data' => $presets,
-        'page' => $page,
-        'size' => $size,
-        'total' => $num,
-    ]);
-}
-
-/** 更新数据 */
-function post_preset_func($request)
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . PRESET_NAME;
-
-    if (isset($request['id']) && !is_null($request['id'])) {
-
-        return $wpdb->update(
-            $table_name,
-            array(
-                'time' => current_time('mysql'),
-                'title' => $request['title'],
-                'text' => $request['text'],
-            ),
-            array('ID' => $request['id']),
-            array(
-                '%s',    // value1
-                '%s'    // value2
-            ),
-            array('%d')
-        );
-    } else {
-        return $wpdb->insert(
-            $table_name,
-            array(
-                'time' => current_time('mysql'),
-                'title' => $request['title'],
-                'text' => $request['text'],
-            )
-        );
-    }
-}
-
-
 
 
 /******* product category ********/
