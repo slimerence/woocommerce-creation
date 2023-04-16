@@ -20,7 +20,7 @@
           <div class="woo-render-btn" @click.stop="removeItem(preset.id)">
             <i class="el-icon-delete"></i>
           </div>
-          <el-image :src="preset.image_url"></el-image>
+          <el-image :src="preset.image"></el-image>
           <div class="woo-preset-info">
             <div class="woo-preset-title">{{ preset.title }}</div>
           </div>
@@ -62,8 +62,8 @@ export default {
     query() {
       getPresets()
         .then((result) => {
-          console.log(result.data);
-          this.presetList = result.data;
+          // console.log(result.data);
+          this.presetList = result;
         })
         .catch((err) => {
           console.log("error", err);
@@ -94,7 +94,7 @@ export default {
         // type: "info",
       })
         .then(() => {
-          deletePresets({ ids: [id] }).then((res) => {
+          deletePresets({ id: id }).then((res) => {
             this.$message.success('Delete success');
             this.query();
           });

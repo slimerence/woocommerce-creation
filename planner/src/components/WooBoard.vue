@@ -23,7 +23,7 @@
 import WooRenderItem from "./WooItem.vue";
 import html2canvas from "html2canvas";
 import { dataURItoBlob, uploadFile } from "@/utils/upload";
-import { savePresets } from "@/api/woocommerce";
+import { savePresetPosts } from "@/api/woocommerce";
 import moment from "moment";
 
 export default {
@@ -81,33 +81,35 @@ export default {
         this.$message.info(
           "Please add at least one product to the creation board"
         );
+        this.saveLoading = false;
         return;
+      } else {
+        // 执行保存
+        this.disableAll();
+        const board = document.getElementById("creationBoard");
+        html2canvas(board).then(async (canvas) => {
+          const dataUrl = canvas.toDataURL("image/png");
+          const blob = dataURItoBlob(dataUrl);
+          const url = await uploadFile(blob);
+          const timeName = moment().format("MMMM Do YYYY, HH:mm:ss");
+          const data = {
+            title: timeName,
+            content: JSON.stringify(configText),
+            image: url,
+          };
+          savePresetPosts(data)
+            .then((res) => {
+              console.log("res", res);
+              if (res.success) {
+                this.$message.success("Save Success");
+              }
+            })
+            .finally(() => {
+              this.saveLoading = false;
+              this.$eventBus.$emit("presetSaved");
+            });
+        });
       }
-      // 执行保存
-      this.disableAll();
-      const board = document.getElementById("creationBoard");
-      html2canvas(board).then(async (canvas) => {
-        const dataUrl = canvas.toDataURL("image/png");
-        const blob = dataURItoBlob(dataUrl);
-        const url = await uploadFile(blob);
-        const timeName = moment().format("MMMM Do YYYY, HH:mm:ss");
-        const data = {
-          title: timeName,
-          text: JSON.stringify(configText),
-          image_url: url,
-        };
-        savePresets(data)
-          .then((res) => {
-            console.log("res", res);
-            if (res.success) {
-              this.$message.success("Save Success");
-            }
-          })
-          .finally(() => {
-            this.saveLoading = false;
-            this.$eventBus.$emit("presetSaved");
-          });
-      });
     },
     generateRenderInfo() {
       const renderProducts = this.products.map((product) => {

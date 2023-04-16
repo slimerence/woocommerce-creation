@@ -106,11 +106,24 @@ add_action('rest_api_init', function () {
 /** 删除接口，支持批量删除 */
 function delete_preset_func($request)
 {
-  global $wpdb;
-  $table_name = $wpdb->prefix . PRESET_NAME;
-  $ids = $request['ids'];
-  $ids = implode(',', array_map('absint', $ids));
-  return $wpdb->query("DELETE FROM $table_name WHERE ID IN($ids)");
+  // global $wpdb;
+  // $table_name = $wpdb->prefix . PRESET_NAME;
+  // $ids = $request['ids'];
+  // $ids = implode(',', array_map('absint', $ids));
+  // return $wpdb->query("DELETE FROM $table_name WHERE ID IN($ids)");
+  $id = $request->get_param('id');
+
+  // if (!current_user_can('delete_post', $id)) {
+  //   return new WP_Error('rest_forbidden', __('You do not have permission to delete this preset.'), array('status' => 403));
+  // }
+
+  $result = wp_delete_post($id, true);
+
+  if ($result === false) {
+    return new WP_Error('rest_cannot_delete', __('Unable to delete preset.'), array('status' => 500));
+  }
+
+  return new WP_REST_Response(array('success' => true), 200);
 }
 
 /** 获取接口，支持分页 */

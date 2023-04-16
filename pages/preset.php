@@ -27,27 +27,27 @@ function my_vue_panel_page()
 <?php
   wp_enqueue_script(
     PLUGIN_SLUG_NAME . '-chunk',
-    plugin_dir_url(__FILE__) . 'app/dist/js/chunk-vendors.js',
+    plugin_dir_url(__FILE__) . '../app/dist/js/chunk-vendors.js',
     array(),
     DEV_MODE ? time() : VERSION,
     true
   );
   wp_enqueue_script(
     PLUGIN_SLUG_NAME . '-main',
-    plugin_dir_url(__FILE__) . 'app/dist/js/app.js',
+    plugin_dir_url(__FILE__) . '../app/dist/js/app.js',
     array(),
     DEV_MODE ? time() : VERSION,
     false
   );
   wp_enqueue_style(
     PLUGIN_SLUG_NAME . '-chunk',
-    plugin_dir_url(__FILE__) . 'app/dist/css/chunk-vendors.css',
+    plugin_dir_url(__FILE__) . '../app/dist/css/chunk-vendors.css',
     array(),
     DEV_MODE ? time() : VERSION
   );
   wp_enqueue_style(
     PLUGIN_SLUG_NAME,
-    plugin_dir_url(__FILE__) . 'app/dist/css/app.css',
+    plugin_dir_url(__FILE__) . '../app/dist/css/app.css',
     array(),
     DEV_MODE ? time() : VERSION
   );
@@ -64,14 +64,13 @@ function add_menu_item()
     'dashicons-tickets-alt',
     30
   );
-  // add_submenu_page(
-  //     PLUGIN_SLUG_NAME,        // parent slug
-  //     'Settings',             // page title
-  //     'Settings',             // menu title
-  //     'manage_options',       // capability
-  //     'our-creations-settings', // menu slug
-  //     'our_creations_settings_callback' // callback function
-  // );
+  add_submenu_page(
+      PLUGIN_SLUG_NAME,        // parent slug
+      'All Presets',             // page title
+      'All Presets',             // menu title
+      'manage_options',       // capability
+      'edit.php?post_type=preset', // menu slug
+  );
   add_submenu_page(
     PLUGIN_SLUG_NAME,        // parent slug
     'Presets',              // page title
@@ -81,6 +80,7 @@ function add_menu_item()
     'our_creations_presets_callback' // callback function
   );
 }
+
 
 function our_creations_presets_callback()
 {

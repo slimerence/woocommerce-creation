@@ -17,6 +17,7 @@ const VERSION = '1.1.7';
 const DEV_MODE = false;
 const CATEGORY_OPTION = 'kongfuseo-creation-category';
 
+
 define('KONGFU_EXT_FILE', __FILE__);
 define('KONGFU_EXT_DIR', plugin_dir_path(KONGFU_EXT_FILE));
 
@@ -27,6 +28,7 @@ require_once KONGFU_EXT_DIR . 'addons/media-library.php';
 require_once KONGFU_EXT_DIR . 'addons/preset-api.php';
 
 require_once KONGFU_EXT_DIR . 'pages/preset.php';
+require_once KONGFU_EXT_DIR . 'pages/preset-admin.php';
 
 
 /**

@@ -33,8 +33,9 @@ export function getOptions() {
 export function getPresets() {
   return request({
     baseURL,
-    url: '/wp-json/kongfuseo-admin-setting-panel/preset/fetch',
-    method: 'post',
+    // url: '/wp-json/kongfuseo-admin-setting-panel/preset/fetch',
+    url:'/wp-json/preset/v1/get',
+    method: 'get',
   })
 }
 
@@ -55,7 +56,6 @@ export function deletePresets(data) {
     data
   })
 }
-
 
 
 export function getWooCategoryByIds(data) {
@@ -85,6 +85,16 @@ export function uploadImage(data) {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    data
+  })
+}
+
+
+export function savePresetPosts(data) {
+  return request({
+    baseURL,
+    url: '/wp-json/preset/v1/create',
+    method: 'post',
     data
   })
 }

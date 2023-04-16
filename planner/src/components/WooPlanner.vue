@@ -156,7 +156,7 @@ export default {
   methods: {
     loadPreset(preset) {
       try {
-        const config = JSON.parse(preset.text);
+        const config = JSON.parse(preset.content);
         if (config && config.products && config.products.length > 0) {
           this.selectedProducts.splice(0);
           config.products.forEach((element) => {
