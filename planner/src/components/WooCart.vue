@@ -23,12 +23,14 @@
                 variationName(product.selectVariation)
               }}</el-tag>
             </div>
-            <div class="woo-cart-price">${{ rentalPrice(product) }}/per day</div>
+            <div class="woo-cart-price">
+              ${{ rentalPrice(product) }}/per day
+            </div>
           </div>
         </el-card>
       </div>
       <div class="woo-cart-footer">
-        <el-button @click="addMultipleToCart" size="small" type="success"
+        <el-button @click="saveCreationAddCart" size="small" type="success"
           >Submit</el-button
         >
         <el-button @click="closeCartDrawer" size="small" type="danger"
@@ -42,7 +44,6 @@
 <script>
 /* eslint-disable */
 import placeholder from "@/assets/placeholder.png";
-import { addToCart } from "@/api/woocommerce";
 export default {
   props: {
     products: Array,
@@ -56,12 +57,19 @@ export default {
       placeholderUrl: placeholder,
     };
   },
+  mounted() {
+    this.$eventBus.$on("addToCart", () => {
+      this.addMultipleToCart();
+    });
+  },
   methods: {
     imgSrc(product) {
       if (product.selectVariation) {
         return product.selectVariation.image.full_src;
       } else {
-        return product.images.length > 0 ? product.images[0]: product.feature_image;
+        return product.images.length > 0
+          ? product.images[0]
+          : product.feature_image;
       }
     },
     rentalPrice(product) {
@@ -97,6 +105,10 @@ export default {
     },
     closeCartDrawer() {
       this.cartVisible = false;
+    },
+    saveCreationAddCart() {
+      this.cartVisible = false;
+      this.$eventBus.$emit("saveCart");
     },
     addMultipleToCart(isRental = true) {
       if ("undefined" === typeof wc_add_to_cart_params) {
@@ -134,75 +146,6 @@ export default {
           ]);
 
           window.location.href = `${window.location.origin}/cart/`;
-        }
-      );
-    },
-    addCart() {
-      const ids = this.products.map((item) => item.id);
-
-      const config = this.products.map((product) => {
-        const productInfo = {
-          product_id: product.id,
-          quantity: 1,
-        };
-        if (product.selectVariation) {
-          productInfo.variation_id = product.selectVariation.variation_id;
-        }
-        return productInfo;
-      });
-      // addToCart(config).then((res) => {
-      //   console.log(res);
-      // });
-      // if(ids.length>0){
-      //   ids.forEach(id => {
-      //       this.woocommerceAddToCart(id);
-      //   });
-      // }
-      if (ids.length > 0) {
-        window.location.href = `${window.origin}/cart/?add-to-cart=${ids.join(
-          ","
-        )}`;
-      }
-    },
-    woocommerceAddToCart(product_id) {
-      if ("undefined" === typeof wc_add_to_cart_params) {
-        // The add to cart params are not present.
-        return false;
-      }
-
-      var data = {
-        product_id: product_id,
-        quantity: 1,
-      };
-
-      jQuery.post(
-        wc_add_to_cart_params.wc_ajax_url
-          .toString()
-          .replace("%%endpoint%%", "add_to_cart"),
-        data,
-        function (response) {
-          if (!response) {
-            return;
-          }
-
-          // This redirects the user to the product url if for example options are needed ( in a variable product ).
-          // You can remove this if it's not the case.
-          if (response.error && response.product_url) {
-            window.location = response.product_url;
-            return;
-          }
-
-          // Remove this if you never want this action redirect.
-          if (wc_add_to_cart_params.cart_redirect_after_add === "yes") {
-            window.location = wc_add_to_cart_params.cart_url;
-            return;
-          }
-
-          // This is important so your theme gets a chance to update the cart quantity for example, but can be removed if not needed.
-          jQuery(document.body).trigger("added_to_cart", [
-            response.fragments,
-            response.cart_hash,
-          ]);
         }
       );
     },

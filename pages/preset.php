@@ -1,6 +1,37 @@
 <?php
 
 
+function add_menu_item()
+{
+  add_menu_page(
+    "Creations Setting Pannel",
+    "Our Creations",
+    "manage_options",
+    PLUGIN_SLUG_NAME,
+    "my_vue_panel_page",
+    'dashicons-tickets-alt',
+    5
+  );
+  add_submenu_page(
+    PLUGIN_SLUG_NAME,        // parent slug
+    'All Presets',             // page title
+    'All Presets',             // menu title
+    'manage_options',       // capability
+    'edit.php?post_type=preset', // menu slug
+  );
+  add_submenu_page(
+    PLUGIN_SLUG_NAME,        // parent slug
+    'Create Preset',              // page title
+    'Create Preset',              // menu title
+    'manage_options',       // capability
+    'our-creations-presets', // menu slug
+    'our_creations_presets_callback' // callback function
+  );
+}
+
+add_action("admin_menu", "add_menu_item");
+
+
 function my_vue_panel_page()
 {
   $setting_data_option = get_option(PLUGIN_SLUG_NAME);
@@ -53,33 +84,6 @@ function my_vue_panel_page()
   );
 }
 
-function add_menu_item()
-{
-  add_menu_page(
-    "Creations Setting Pannel",
-    "Our Creations",
-    "manage_options",
-    PLUGIN_SLUG_NAME,
-    "my_vue_panel_page",
-    'dashicons-tickets-alt',
-    30
-  );
-  add_submenu_page(
-      PLUGIN_SLUG_NAME,        // parent slug
-      'All Presets',             // page title
-      'All Presets',             // menu title
-      'manage_options',       // capability
-      'edit.php?post_type=preset', // menu slug
-  );
-  add_submenu_page(
-    PLUGIN_SLUG_NAME,        // parent slug
-    'Presets',              // page title
-    'Presets',              // menu title
-    'manage_options',       // capability
-    'our-creations-presets', // menu slug
-    'our_creations_presets_callback' // callback function
-  );
-}
 
 
 function our_creations_presets_callback()
@@ -99,5 +103,3 @@ function our_creations_presets_callback()
     'nonce' => wp_create_nonce('rental-cart')
   ));
 }
-
-add_action("admin_menu", "add_menu_item");

@@ -2,7 +2,7 @@
 /*
  * Plugin Name:       Kongfuseo Addon
  * Description:       Enhance woocommerce functions with customized design products.
- * Version:           1.1.7
+ * Version:           1.2.0
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Author:            Kongfuseo Co.
@@ -13,7 +13,7 @@
 
 
 const PLUGIN_SLUG_NAME = 'kongfuseo-admin-setting-panel';
-const VERSION = '1.1.7';
+const VERSION = '1.2.0';
 const DEV_MODE = false;
 const CATEGORY_OPTION = 'kongfuseo-creation-category';
 
@@ -26,6 +26,7 @@ require_once KONGFU_EXT_DIR . 'addons/cart-api.php';
 require_once KONGFU_EXT_DIR . 'addons/global-api.php';
 require_once KONGFU_EXT_DIR . 'addons/media-library.php';
 require_once KONGFU_EXT_DIR . 'addons/preset-api.php';
+require_once KONGFU_EXT_DIR . 'addons/orders.php';
 
 require_once KONGFU_EXT_DIR . 'pages/preset.php';
 require_once KONGFU_EXT_DIR . 'pages/preset-admin.php';

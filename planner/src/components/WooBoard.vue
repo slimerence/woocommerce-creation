@@ -5,6 +5,9 @@
     @click.self="clickBoard"
     :style="{ backgroundImage: background }"
     v-loading="saveLoading"
+    element-loading-text="Saving your creation..."
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.8)"
   >
     <woo-render-item
       v-for="product of products"
@@ -25,7 +28,7 @@ import html2canvas from "html2canvas";
 import { dataURItoBlob, uploadFile } from "@/utils/upload";
 import { savePresetPosts } from "@/api/woocommerce";
 import moment from "moment";
-
+import Cookies from "js-cookie";
 export default {
   props: {
     productList: Array,
@@ -62,20 +65,23 @@ export default {
     },
   },
   mounted() {
-    this.$eventBus.$on("save", this.saveBoard);
+    this.$eventBus.$on("save", () => {
+      this.saveBoard("preset");
+    });
+    this.$eventBus.$on("saveCart", () => {
+      this.saveBoard("cart");
+    });
   },
   methods: {
     loadProducts(productList) {
       this.products = productList;
     },
-
     preCheckPreset() {
       return this.products.length > 0;
     },
-    saveBoard() {
+    saveBoard(type = "preset") {
       this.saveLoading = true;
       const valid = this.preCheckPreset();
-      const configText = this.generateRenderInfo();
       // return;
       if (!valid) {
         this.$message.info(
@@ -91,25 +97,34 @@ export default {
           const dataUrl = canvas.toDataURL("image/png");
           const blob = dataURItoBlob(dataUrl);
           const url = await uploadFile(blob);
-          const timeName = moment().format("MMMM Do YYYY, HH:mm:ss");
-          const data = {
-            title: timeName,
-            content: JSON.stringify(configText),
-            image: url,
-          };
-          savePresetPosts(data)
-            .then((res) => {
-              console.log("res", res);
-              if (res.success) {
-                this.$message.success("Save Success");
-              }
-            })
-            .finally(() => {
-              this.saveLoading = false;
-              this.$eventBus.$emit("presetSaved");
-            });
+          if (type == "preset") {
+            this.saveToPresetPost(url);
+          } else {
+            Cookies.set("creation_url", url);
+            this.$eventBus.$emit("addToCart");
+          }
         });
       }
+    },
+    saveToPresetPost(url) {
+      const configText = this.generateRenderInfo();
+      const timeName = moment().format("MMMM Do YYYY, HH:mm:ss");
+      const data = {
+        title: timeName,
+        content: JSON.stringify(configText),
+        image: url,
+      };
+      savePresetPosts(data)
+        .then((res) => {
+          console.log("res", res);
+          if (res.success) {
+            this.$message.success("Save Success");
+          }
+        })
+        .finally(() => {
+          this.saveLoading = false;
+          this.$eventBus.$emit("presetSaved");
+        });
     },
     generateRenderInfo() {
       const renderProducts = this.products.map((product) => {

@@ -17,7 +17,11 @@
           :key="preset.id"
           @click.native="loadPreset(preset)"
         >
-          <div class="woo-render-btn" @click.stop="removeItem(preset.id)">
+          <div
+            class="woo-render-btn"
+            v-if="isAdmin"
+            @click.stop="removeItem(preset.id)"
+          >
             <i class="el-icon-delete"></i>
           </div>
           <el-image :src="preset.image"></el-image>
@@ -43,6 +47,12 @@ export default {
       config: null,
       presetList: [],
     };
+  },
+  computed: {
+    isAdmin() {
+      // eslint-disable-next-line no-undef
+      return !!vue_isadmin;
+    },
   },
   methods: {
     open(title, config = null) {
@@ -95,7 +105,7 @@ export default {
       })
         .then(() => {
           deletePresets({ id: id }).then((res) => {
-            this.$message.success('Delete success');
+            this.$message.success("Delete success");
             this.query();
           });
         })
