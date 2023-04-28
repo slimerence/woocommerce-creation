@@ -6,6 +6,7 @@ add_action('rest_api_init', function () {
   register_rest_route(PLUGIN_SLUG_NAME, '/products/(?P<category_id>\d+)', array(
     'methods' => 'POST',
     'callback' => 'list_product_by_category',
+    'permission_callback' => '__return_true',
     'args' => array(
       'category_id' => array(
         'required' => true,
@@ -27,6 +28,7 @@ function list_product_by_category($request)
 
   $from_date = $request->get_param('fromDate');
   $end_date =  $request->get_param('endDate');
+  $type = $request->get_param('type'); // check is sale or rental
 
   $args = array(
     'post_type' => 'product',
@@ -42,7 +44,68 @@ function list_product_by_category($request)
 
   $query = new WC_Product_Query($args);
   $products = $query->get_products();
+  if ($type === 'rent') {
+    return get_kf_rental_products($products, $from_date, $end_date);
+  } else {
+    return get_kf_sale_products($products);
+  }
+}
 
+function get_kf_sale_products($products)
+{
+  if (empty($products)) {
+    return array();
+  }
+  $response = array();
+  foreach ($products as $product) {
+    $product_id = $product->get_id();
+    $product_data = array(
+      'id' => $product->get_id(),
+      'name' => $product->get_name(),
+      'sku' => $product->get_sku(),
+      'type' => $product->get_type(),
+      'method' => 'sale',
+      'price' => $product->get_price(),
+      'regular_price' => $product->get_regular_price(),
+      'sale_price' => $product->get_sale_price(),
+      'permalink' => $product->get_permalink(),
+      'images' => array(),
+      'feature_image' => wp_get_attachment_image_src($product->get_image_id(), 'full')[0],
+      'categories' => array(),
+      'tags' => array(),
+      'attributes' => array(),
+      'variations' => get_wc_rental_product_variations($product_id, 'sale'),
+      'dimensions' => $product->get_dimensions(false),
+    );
+    $product_images = $product->get_gallery_image_ids();
+
+    foreach ($product_images as $image_id) {
+      $product_data['images'][] = wp_get_attachment_url($image_id);
+    }
+    $product_categories = wp_get_post_terms($product->get_id(), 'product_cat', array('fields' => 'names'));
+    foreach ($product_categories as $category) {
+      $product_data['categories'][] = $category;
+    }
+    $product_tags = wp_get_post_terms($product->get_id(), 'product_tag', array('fields' => 'names'));
+    foreach ($product_tags as $tag) {
+      $product_data['tags'][] = $tag;
+    }
+    $product_attributes = $product->get_attributes();
+    foreach ($product_attributes as $attribute_name => $attribute) {
+      $product_data['attributes'][] = array(
+        'name' => $attribute_name,
+        'value' => $attribute->get_options(),
+      );
+    }
+    // array_push($response,$product_data);
+    $response[] = $product_data;
+  }
+  return $response;
+}
+
+
+function get_kf_rental_products($products, $from_date, $end_date)
+{
   if (empty($products)) {
     return array();
   }
@@ -57,6 +120,7 @@ function list_product_by_category($request)
         'name' => $product->get_name(),
         'sku' => $product->get_sku(),
         'type' => $product->get_type(),
+        'method' => 'rent',
         'price' => $product->get_price(),
         'regular_price' => $product->get_regular_price(),
         'sale_price' => $product->get_sale_price(),
@@ -66,7 +130,7 @@ function list_product_by_category($request)
         'categories' => array(),
         'tags' => array(),
         'attributes' => array(),
-        'variations' => get_wc_rental_product_variations($product_id, $from_date, $end_date),
+        'variations' => get_wc_rental_product_variations($product_id, 'rent', $from_date, $end_date),
         'dimensions' => $product->get_dimensions(false),
         'min_price' => get_wc_rental_product_min_prices($product_id),
         'rental_only' => $is_rental,
@@ -101,7 +165,7 @@ function list_product_by_category($request)
   return $response;
 }
 
-function get_wc_rental_product_variations($product_id, $from_date, $end_date)
+function get_wc_rental_product_variations($product_id, $type, $from_date = '', $end_date = '')
 {
   $product = wc_get_product($product_id);
   $type = $product->get_type();
@@ -110,7 +174,9 @@ function get_wc_rental_product_variations($product_id, $from_date, $end_date)
     $variations = $product->get_available_variations();
     foreach ($variations as $variation) {
       $variation_id = $variation['variation_id'];
-      $variation['rent_available'] = wcrp_rental_products_check_availability($variation_id, $from_date, $end_date, 1);
+      if ($type === 'rent') {
+        $variation['rent_available'] = wcrp_rental_products_check_availability($variation_id, $from_date, $end_date, 1);
+      }
       $response[] = $variation;
     }
   }

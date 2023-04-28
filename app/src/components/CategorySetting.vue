@@ -35,10 +35,7 @@ export default {
       this.selected = value
     },
     getParams() {
-      console.log(this.selected);
-      return {
-        categories: this.selected,
-      };
+      return this.selected
     },
     initCategories() {
       getProductCategories().then((res) => {

@@ -119,11 +119,12 @@ export default {
         const resObj = {
           product_id: product.id,
           quantity: 1,
+          method: product.method,
         };
         if (product.selectVariation) {
           resObj.variation_id = product.selectVariation.variation_id;
         }
-        if (isRental) {
+        if (product.method === "rent") {
           resObj.wcrp_rental_products_rental_form_nonce =
             kongfuseo_addon_data.nonce;
           resObj.wcrp_rental_products_rent_from = this.eventSetting.date[0];

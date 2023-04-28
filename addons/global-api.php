@@ -5,6 +5,8 @@ add_action('rest_api_init', function () {
   register_rest_route(PLUGIN_SLUG_NAME, '/rental-option/get', array(
     'methods' => 'GET',
     'callback' => 'get_rental_global_option',
+    'permission_callback' => '__return_true',
+
   ));
 });
 
@@ -21,6 +23,8 @@ function create_image_upload_endpoint()
   register_rest_route(PLUGIN_SLUG_NAME, '/image-upload', array(
     'methods' => 'POST',
     'callback' => 'handle_image_upload',
+    'permission_callback' => '__return_true',
+
     // 'permission_callback' => function () {
     //   return current_user_can('edit_posts');
     // },

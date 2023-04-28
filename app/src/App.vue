@@ -15,7 +15,16 @@
           @onUpdate="updateImages"
         />
         <h2 class="theme-title">Creation Category Setting</h2>
-        <category-setting ref="categorySetting" />
+        <el-row>
+          <el-col :span="12">
+            <h3>Rental Categories</h3>
+            <category-setting ref="categorySetting" />
+          </el-col>
+          <el-col :span="12">
+            <h3>Sale Categories</h3>
+            <category-setting ref="salesCategorySetting" />
+          </el-col>
+        </el-row>
       </el-tab-pane>
     </el-tabs>
     <el-button type="primary" @click="handleSave">Save</el-button>
@@ -50,10 +59,14 @@ export default {
     if (vue_wp_settings_data && vue_wp_settings_data.images) {
       this.images = vue_wp_settings_data.images;
     }
-    console.log(vue_wp_settings_data);
     if (vue_wp_settings_data && vue_wp_settings_data.categories) {
       this.$refs.categorySetting.updateSelected(
         vue_wp_settings_data.categories
+      );
+    }
+    if (vue_wp_settings_data && vue_wp_settings_data.salesCategories) {
+      this.$refs.salesCategorySetting.updateSelected(
+        vue_wp_settings_data.salesCategories
       );
     }
   },
@@ -66,27 +79,53 @@ export default {
     },
     generateParams() {
       const themeOptions = this.$refs.themeSetting.getParams();
-      const categoryOptions = this.$refs.categorySetting.getParams();
-      return { ...themeOptions, ...categoryOptions };
+      const categoryOptions = JSON.parse(
+        JSON.stringify(this.$refs.categorySetting.getParams())
+      );
+      const salesCategoryOptions = JSON.parse(
+        JSON.stringify(this.$refs.salesCategorySetting.getParams())
+      );
+      const checkSame = categoryOptions
+        .map((item) => item[item.length - 1])
+        .some((item) => {
+          const salesIds = salesCategoryOptions.map(
+            (item) => item[item.length - 1]
+          );
+          return salesIds.includes(item);
+        });
+      if (checkSame) {
+        throw new Error("same_category");
+      } else {
+        return {
+          ...themeOptions,
+          categories: categoryOptions,
+          salesCategories: salesCategoryOptions,
+        };
+      }
     },
     handleSave() {
-      const params = this.generateParams();
-      console.log(params);
+      try {
+        const params = this.generateParams();
+        if (params) {
+          saveOptions(params)
+            .then((res) => {
+              console.log("res", res);
+              if (res) {
+                this.$message.success("update success");
+              } else {
+                this.$message.error("server error");
+              }
+            })
+            .catch(() => {
+              this.$message.error("server error");
+            });
+        }
+      } catch (error) {
+        this.$message.error("Same Category Detected");
+      }
       // return;
       // const postString = JSON.stringify(params);
       // console.log("save", params, postString);
-      saveOptions(params)
-        .then((res) => {
-          console.log("res", res);
-          if (res) {
-            this.$message.success("update success");
-          } else {
-            this.$message.error("server error");
-          }
-        })
-        .catch(() => {
-          this.$message.error("server error");
-        });
     },
   },
 };

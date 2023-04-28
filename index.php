@@ -2,7 +2,7 @@
 /*
  * Plugin Name:       Kongfuseo Addon
  * Description:       Enhance woocommerce functions with customized design products.
- * Version:           1.2.0
+ * Version:           1.2.5
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Author:            Kongfuseo Co.
@@ -13,7 +13,7 @@
 
 
 const PLUGIN_SLUG_NAME = 'kongfuseo-admin-setting-panel';
-const VERSION = '1.2.0';
+const VERSION = '1.2.5';
 const DEV_MODE = false;
 const CATEGORY_OPTION = 'kongfuseo-creation-category';
 
@@ -27,6 +27,7 @@ require_once KONGFU_EXT_DIR . 'addons/global-api.php';
 require_once KONGFU_EXT_DIR . 'addons/media-library.php';
 require_once KONGFU_EXT_DIR . 'addons/preset-api.php';
 require_once KONGFU_EXT_DIR . 'addons/orders.php';
+require_once KONGFU_EXT_DIR . 'addons/cart-price.php';
 
 require_once KONGFU_EXT_DIR . 'pages/preset.php';
 require_once KONGFU_EXT_DIR . 'pages/preset-admin.php';
@@ -53,6 +54,8 @@ add_action('rest_api_init', function () {
     register_rest_route(PLUGIN_SLUG_NAME, '/save', array(
         'methods' => 'POST',
         'callback' => 'save_settings_func',
+        'permission_callback' => '__return_true',
+
     ));
 });
 
@@ -67,6 +70,8 @@ add_action('rest_api_init', function () {
     register_rest_route(PLUGIN_SLUG_NAME, '/get', array(
         'methods' => 'GET',
         'callback' => 'get_settings_func',
+        'permission_callback' => '__return_true',
+
     ));
 });
 
@@ -238,6 +243,8 @@ add_action('rest_api_init', function () {
     register_rest_route(PLUGIN_SLUG_NAME, '/product-category/get', array(
         'methods' => 'GET',
         'callback' => 'list_product_categories',
+        'permission_callback' => '__return_true',
+
     ));
 });
 
@@ -268,5 +275,6 @@ add_action('rest_api_init', function () {
     register_rest_route(PLUGIN_SLUG_NAME, '/product-category/fetch', array(
         'methods' => 'POST',
         'callback' => 'list_categories_by_ids',
+        'permission_callback' => '__return_true',
     ));
 });

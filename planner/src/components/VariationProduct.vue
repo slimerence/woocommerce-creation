@@ -16,7 +16,12 @@
         <el-col :span="16">
           <div class="product-dialog-right">
             <h2>{{ productInfo.name }}</h2>
-            <p>Rent Price From: ${{ rentalPrice }}</p>
+            <template v-if="productInfo.method === 'rent'">
+              <p>Rent Price From: ${{ rentalPrice }}</p>
+            </template>
+            <template v-else>
+              <p>Price: ${{ salePrice }}</p>
+            </template>
             <div class="product-variations-wrapper">
               <el-tag
                 v-for="variation of productInfo.variations"
@@ -73,6 +78,13 @@ export default {
         return this.productInfo.min_price;
       }
     },
+    salePrice() {
+      if (this.currentVariation) {
+        return this.currentVariation.price;
+      } else {
+        return this.productInfo.price;
+      }
+    },
     disableAdd() {
       return !this.currentVariation;
     },
@@ -98,7 +110,10 @@ export default {
       }
     },
     chooseVariation(variation) {
-      if(variation.rent_available.indexOf('unavailable_') > -1 && !this.isAdmin){
+      if (
+        variation.rent_available.indexOf("unavailable_") > -1 &&
+        !this.isAdmin
+      ) {
         return false;
       }
       this.currentImg = variation.image.full_src;
@@ -148,7 +163,7 @@ export default {
     &:hover {
       background-color: #31c2fb;
     }
-    &.disabled{
+    &.disabled {
       cursor: not-allowed;
       background-color: #49c7f969;
     }

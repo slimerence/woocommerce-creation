@@ -1,9 +1,36 @@
 <template>
   <div :id="uniqueId" class="woo-render-item" v-click-outside="deActivate">
-    <div class="woo-render-btn" @click.capture="removeItem">
-      <i class="el-icon-delete"></i>
+    <div class="woo-render-btn-group">
+      <div class="woo-render-btn bg-red" @click.capture="removeItem">
+        <i class="el-icon-delete"></i>
+      </div>
+      <div
+        class="woo-render-btn bg-yellow"
+        style="transform: rotate(90deg)"
+        @click.capture="flipItem"
+      >
+        <i class="el-icon-sort"></i>
+      </div>
+      <el-popover v-if="enableEdit" placement="right" width="200" trigger="click">
+        <label for="imageHue">Color Change</label>
+        <el-slider
+          name="imageHue"
+          v-model="hueRotateValue"
+          :show-tooltip="false"
+          :min="-180"
+          :max="180"
+        ></el-slider>
+
+        <div class="woo-render-btn bg-color" slot="reference">
+          <i class="el-icon-edit-outline"></i>
+        </div>
+      </el-popover>
     </div>
-    <div class="woo-render-image" :style="{ height: calcHeight }">
+
+    <div
+      class="woo-render-image"
+      :style="{ height: calcHeight, filter: filterStyle }"
+    >
       <el-image :src="imgSrc" @load="afterLoad"></el-image>
     </div>
   </div>
@@ -20,6 +47,7 @@ export default {
     return {
       product: {},
       placeholderUrl: "",
+      hueRotateValue: 0,
     };
   },
   created() {
@@ -27,6 +55,12 @@ export default {
   },
   mounted() {},
   computed: {
+    enableEdit(){
+      return this.product.method === 'sale'
+    },
+    filterStyle() {
+      return `hue-rotate(${this.hueRotateValue}deg)`;
+    },
     imgSrc() {
       if (this.product.selectVariation) {
         return this.product.selectVariation.image.full_src;
@@ -74,8 +108,22 @@ export default {
       this.$emit("clickOut", this.uniqueId);
     },
     removeItem() {
-      console.log("11111");
       this.$emit("removeEle", this.uniqueId);
+    },
+    flipItem() {
+      function flipMatrix3dString(matrixString) {
+        let NumberAry = matrixString
+          .substring(matrixString.indexOf("(") + 1, matrixString.length - 1)
+          .split(",");
+        NumberAry[0] *= -1;
+        return `matrix3d(${NumberAry.join(",")})`;
+      }
+      const element = document.getElementById(this.uniqueId);
+      if (element) {
+        const origionalTransform = element.style.transform;
+        const fliped = flipMatrix3dString(origionalTransform);
+        element.style.transform = fliped;
+      }
     },
   },
 };
@@ -100,19 +148,30 @@ export default {
       }
     }
   }
-  .woo-render-btn {
+  .woo-render-btn-group {
     position: absolute;
     top: 0;
     right: 0;
+    z-index: 100;
+  }
+  .woo-render-btn {
     width: 20px;
     height: 20px;
-    z-index: 100;
-    background: red;
     text-align: center;
     line-height: 20px;
+    cursor: pointer;
     i {
       font-size: 12px;
       color: #fff;
+    }
+    &.bg-red {
+      background: red;
+    }
+    &.bg-yellow {
+      background: #efd949;
+    }
+    &.bg-color {
+      background: linear-gradient(45deg, #79cfff, #da30b5);
     }
   }
 }

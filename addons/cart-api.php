@@ -53,11 +53,11 @@ function kongfu_add_multiple_to_cart()
         $product_id = $product['product_id'];
         $quantity = $product['quantity'];
         $variation_id = $product['variation_id'];
-
+        $method = $product['method'];
         // Get the product object
         $product_obj = wc_get_product($product_id);
         $cart_item_data = array();
-        if (!empty($product['wcrp_rental_products_rent_from'])) {
+        if (!empty($product['wcrp_rental_products_rent_from']) && $method === 'rent') {
             $cart_item_data['wcrp_rental_products_rent_from'] = $product['wcrp_rental_products_rent_from'];
             $cart_item_data['wcrp_rental_products_rent_to'] = $product['wcrp_rental_products_rent_to'];
             $cart_item_data['wcrp_rental_products_rental_form_nonce'] = $product['wcrp_rental_products_rental_form_nonce'];
@@ -71,13 +71,12 @@ function kongfu_add_multiple_to_cart()
             $cart_item_data['wcrp_rental_products_start_days_threshold'] = $start_days_threshold;
             $cart_item_data['wcrp_rental_products_return_days_threshold'] = $return_days_threshold;
             $cart_item_data['wcrp_rental_products_cart_item_timestamp'] = current_time('timestamp', false);
-            
+
             $rentFromDate = new DateTime($product['wcrp_rental_products_rent_from']);
             $rentToDate = new DateTime($product['wcrp_rental_products_rent_to']);
             $diff = $rentFromDate->diff($rentToDate);
-            $diffDays = intval($diff->format('%r%a')) + 1;
-									
-            $cart_item_data['wcrp_rental_products_cart_item_price'] = get_rental_product_price($product_id, $variation_id) * $diffDays;
+
+            $cart_item_data['wcrp_rental_products_cart_item_price'] = get_rental_item_price($product_id, $product['wcrp_rental_products_rent_from'], $product['wcrp_rental_products_rent_to'], $variation_id);
         }
 
         if ($product_obj->is_type('variable')) {
@@ -115,5 +114,3 @@ function get_rental_product_price($product_id, $variation_id = 0)
     }
     return $price;
 }
-
-

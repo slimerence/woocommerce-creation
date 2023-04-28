@@ -15,7 +15,7 @@
           class="woo-category-item"
           v-for="category of categories"
           :key="category.term_id"
-          @click="loadCategory(category.term_id)"
+          @click="loadCategory(category)"
         >
           <i class="el-icon-menu"></i>
           <span
@@ -55,8 +55,14 @@
                 {{ product.name }}
               </div>
               <div class="woo-cart-price">
-                Rent from
-                <span class="price-span">${{ product.min_price }}</span>
+                <template v-if="product.method === 'rent'">
+                  Rent from
+                  <span class="price-span">${{ product.min_price }}</span>
+                </template>
+                <template v-else>
+                  Price from
+                  <span class="price-span">${{ product.price }}</span>
+                </template>
               </div>
               <el-tag
                 v-show="product.variations.length > 0"
@@ -72,6 +78,7 @@
                   plain
                   disabled
                   v-if="
+                    product.method === 'rent' &&
                     product.rent_available !== 'available' &&
                     product.rent_available !== 'unavailable_variable'
                   "
@@ -179,14 +186,23 @@ export default {
     async openCategory(config) {
       this.categoryDrawerVisible = true;
       // const categories = await this.getOptionCategories();
-      const categories = config.categories || [];
-      const ids = categories.map((item) => item[item.length - 1]);
+      const rentCategories = config.categories || [];
+      const salesCategories = config.salesCategories || [];
+      const ids = rentCategories.map((item) => item[item.length - 1]);
+      const salesIds = salesCategories.map((item) => item[item.length - 1]);
+      const idSet = new Set(ids.concat(...salesIds));
       const params = {
-        ids: ids,
+        ids: [...idSet],
       };
       getWooCategoryByIds(params)
         .then((res) => {
-          this.categories = res;
+          this.categories = res.map((item) => {
+            const saleType = ids.includes(item.term_id) ? "rent" : "sale";
+            return {
+              type: saleType,
+              ...item,
+            };
+          });
         })
         .catch(() => {
           this.categories = [];
@@ -207,16 +223,17 @@ export default {
       //     this.categories = [];
       //   });
     },
-    loadCategory(id) {
-      this.currentId = id;
+    loadCategory(category) {
+      this.currentId = category.term_id;
       this.productLoading = true;
       this.productDrawerVisible = true;
       const setting = {
         fromDate: this.eventSetting.date[0],
         endDate: this.eventSetting.date[1],
         postcode: this.eventSetting.postcode,
+        type: category.type,
       };
-      getProducts(id, setting)
+      getProducts(category.term_id, setting)
         .then((res) => {
           this.productList = res;
         })

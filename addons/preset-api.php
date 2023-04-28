@@ -66,8 +66,8 @@ function kongfu_install_data()
   );
 }
 
-register_activation_hook(__FILE__, 'kongfu_database_create');
-register_activation_hook(__FILE__, 'kongfu_install_data');
+// register_activation_hook(__FILE__, 'kongfu_database_create');
+// register_activation_hook(__FILE__, 'kongfu_install_data');
 
 
 function myplugin_update_db_check()
@@ -77,22 +77,24 @@ function myplugin_update_db_check()
   }
 }
 
-add_action('plugins_loaded', 'myplugin_update_db_check');
+// add_action('plugins_loaded', 'myplugin_update_db_check');
 
 /************************** 数据库初始化END ***************************/
 
 
-add_action('rest_api_init', function () {
-  register_rest_route(PLUGIN_SLUG_NAME, '/preset/fetch', array(
-    'methods' => 'POST',
-    'callback' => 'get_preset_func',
-  ));
-});
+// add_action('rest_api_init', function () {
+//   register_rest_route(PLUGIN_SLUG_NAME, '/preset/fetch', array(
+//     'methods' => 'POST',
+//     'callback' => 'get_preset_func',
+//   ));
+// });
 
 add_action('rest_api_init', function () {
   register_rest_route(PLUGIN_SLUG_NAME, '/preset/post', array(
     'methods' => 'POST',
     'callback' => 'post_preset_func',
+    'permission_callback' => '__return_true',
+
   ));
 });
 
@@ -100,6 +102,8 @@ add_action('rest_api_init', function () {
   register_rest_route(PLUGIN_SLUG_NAME, '/preset/delete', array(
     'methods' => 'POST',
     'callback' => 'delete_preset_func',
+    'permission_callback' => '__return_true',
+
   ));
 });
 

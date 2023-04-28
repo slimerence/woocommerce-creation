@@ -105,6 +105,7 @@ add_action( 'rest_api_init', function () {
   register_rest_route( 'preset/v1', '/create', array(
       'methods' => 'POST',
       'callback' => 'create_preset_post',
+      'permission_callback' => '__return_true',
       // 'permission_callback' => function() {
       //     return current_user_can( 'edit_posts' );
       // },
@@ -116,6 +117,8 @@ add_action('rest_api_init', function () {
   register_rest_route('preset/v1', '/get', array(
     'methods' => 'GET',
     'callback' => 'kongfuseo_get_presets',
+    'permission_callback' => '__return_true',
+
   ));
 });
 

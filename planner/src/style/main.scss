@@ -10,6 +10,14 @@ $--color-lighter: #ffa32c;
   border-color: $--color-primary;
 }
 
+.el-slider__bar{
+  background-color:$--color-primary;
+}
+
+.el-slider__button{
+  border: 2px solid $--color-primary;
+}
+
 .el-button--primary:hover,
 .el-button--primary:focus {
   background-color: $--color-lighter;
@@ -22,4 +30,13 @@ $--color-lighter: #ffa32c;
 .el-button--primary.is-disabled:hover {
   background-color: #ffe6ad;
   border-color: #ffe6ad;
+}
+
+.sjx-controls .sjx-hdl-line{
+  background: #efd949;
+}
+
+.sjx-hdl.sjx-hdl-rotator {
+  background: #efd949;
+  border: 1px solid #efd949;
 }
