@@ -11,7 +11,12 @@
       >
         <i class="el-icon-sort"></i>
       </div>
-      <el-popover v-if="enableEdit" placement="right" width="200" trigger="click">
+      <el-popover
+        v-if="enableEdit"
+        placement="right"
+        width="200"
+        trigger="click"
+      >
         <label for="imageHue">Color Change</label>
         <el-slider
           name="imageHue"
@@ -55,8 +60,8 @@ export default {
   },
   mounted() {},
   computed: {
-    enableEdit(){
-      return this.product.method === 'sale'
+    enableEdit() {
+      return this.product.method === "sale";
     },
     filterStyle() {
       return `hue-rotate(${this.hueRotateValue}deg)`;
@@ -116,6 +121,7 @@ export default {
           .substring(matrixString.indexOf("(") + 1, matrixString.length - 1)
           .split(",");
         NumberAry[0] *= -1;
+        NumberAry[1] *= -1;
         return `matrix3d(${NumberAry.join(",")})`;
       }
       const element = document.getElementById(this.uniqueId);
