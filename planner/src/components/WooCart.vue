@@ -24,7 +24,12 @@
               }}</el-tag>
             </div>
             <div class="woo-cart-price">
-              ${{ rentalPrice(product) }}/per day
+              <template v-if="product.method === 'rent'">
+                ${{ rentalPrice(product) }}/per day
+            </template>
+            <template v-else>
+              <p>${{ salePrice(product) }}</p>
+            </template>
             </div>
           </div>
         </el-card>
@@ -63,6 +68,13 @@ export default {
     });
   },
   methods: {
+    salePrice(product) {
+      if (product.selectVariation) {
+        return product.selectVariation.display_price;
+      } else {
+        return product.price;
+      }
+    },
     imgSrc(product) {
       if (product.selectVariation) {
         return product.selectVariation.image.full_src;

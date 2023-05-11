@@ -28,7 +28,7 @@
                 :key="variation.variation_id"
                 :class="{
                   disabled:
-                    variation.rent_available.indexOf('unavailable_') > -1,
+                  variationAvailable(variation)
                 }"
                 @click="chooseVariation(variation)"
               >
@@ -80,7 +80,7 @@ export default {
     },
     salePrice() {
       if (this.currentVariation) {
-        return this.currentVariation.price;
+        return this.currentVariation.display_price;
       } else {
         return this.productInfo.price;
       }
@@ -109,9 +109,16 @@ export default {
         return "";
       }
     },
+    variationAvailable(variation){
+      if(this.productInfo.method === 'rent'){
+        return variation.rent_available.indexOf("unavailable_") > -1
+      }else {
+        return false
+      }
+    },
     chooseVariation(variation) {
       if (
-        variation.rent_available.indexOf("unavailable_") > -1 &&
+        this.variationAvailable(variation) &&
         !this.isAdmin
       ) {
         return false;
