@@ -26,10 +26,8 @@
             <div class="woo-cart-price">
               <template v-if="product.method === 'rent'">
                 ${{ rentalPrice(product) }}/per day
-            </template>
-            <template v-else>
-              <p>${{ salePrice(product) }}</p>
-            </template>
+              </template>
+              <template v-else> ${{ salePrice(product) }} </template>
             </div>
           </div>
         </el-card>
@@ -94,6 +92,13 @@ export default {
         }
       } else {
         return product.min_price;
+      }
+    },
+    salePrice(product) {
+      if (product.selectVariation) {
+        return product.selectVariation.price;
+      } else {
+        return product.price;
       }
     },
     variationName(variation) {
